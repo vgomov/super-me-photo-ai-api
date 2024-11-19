@@ -2,6 +2,8 @@
 data/outputs
 data/ready
 data/generated
+data/references
+
 # Mac Related
 .DS_Store
 

@@ -1,7 +1,7 @@
 # Tutorial Hidden files
 data/outputs
 data/ready
-
+data/generated
 # Mac Related
 .DS_Store
 

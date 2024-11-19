@@ -4,7 +4,7 @@
 Learn how to build an API that trains and generate photos featuring... you! Using FastAPI, Upstash, Replicate, Jupyter, and more
 
 __Tech Stack__
-- [Python 3.12](https://github.com/python)
+- [Python 3.13](https://github.com/python)
 - [Django](https://github.com/django/django) (`pip install "Django>=5.1,<5.2"`)
 - [Upstash](https://upstash.com) - serverless redis, qstash for async endpoint scheduling, rate limiting, caching, and more.
 - [Replicate](https://replicate) - train and run generative ai model featuring your face

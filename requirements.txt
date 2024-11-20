@@ -3,5 +3,6 @@ python-decouple
 jupyter
 replicate
 pillow
+fastapi[standard]
 # support .heic images -> see readme
 # pillow-heif 

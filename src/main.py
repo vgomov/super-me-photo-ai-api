@@ -6,13 +6,14 @@ from fastapi import (
     HTTPException,
     Request,
     )
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi_limiter.depends import RateLimiter
+import mimetypes
 
 from pydantic import BaseModel
 
 import helpers
-from helpers import schemas
+from helpers import schemas, fetchers
 from helpers.ratelimiting import lifespan as my_ratelimit_lifespan
 
 
@@ -86,3 +87,31 @@ def prediction_detail_view(prediction_id:str):
     elif status == 500:
         raise HTTPException(status_code=status, detail="Server error")
     return schemas.PredictionDetailModel.from_replicate(result.dict())
+
+@app.get("/predictions/{prediction_id}/files/{index_id}", dependencies=[
+    Depends(RateLimiter(times=1000, seconds=20))
+    ],
+    response_model=schemas.PredictionDetailModel
+)
+async def prediction_file_output_view(prediction_id:str, index_id:int):
+    result, status = helpers.get_prediction_detail(prediction_id)
+    if status == 404:
+        raise HTTPException(status_code=status, detail="Prediction not found")
+    elif status == 500:
+        raise HTTPException(status_code=status, detail="Server error")
+    outputs = result.output
+    if outputs is None:
+        raise HTTPException(status_code=404, detail="Prediction output not found")
+    len_outputs = len(outputs)
+    if index_id > len_outputs:
+        raise HTTPException(status_code=404, detail="File at index not found")
+    try:
+        file_url = result.output[index_id]
+    except Exception as e:
+         raise HTTPException(status_code=500, detail=f"Server error {e}")
+    media_type, _ = mimetypes.guess_type(file_url)
+    content = await fetchers.fetch_file_async(file_url)
+    return StreamingResponse(
+        iter([content]),
+        media_type=media_type or "image/jpeg"
+    )

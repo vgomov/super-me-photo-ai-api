@@ -2,6 +2,7 @@ from functools import lru_cache
 
 from decouple import config
 from replicate.client import Client
+from replicate.exceptions import ReplicateError
 
 REPLICATE_API_TOKEN = config("REPLICATE_API_TOKEN")
 REPLICATE_MODEL = config("REPLICATE_MODEL")
@@ -59,3 +60,16 @@ def list_prediction_results(
     if status is not None:
         results = [x for x in results if x['status'] == status]
     return results
+
+
+def get_prediction_detail(
+        prediction_id=None
+    ):
+    replicate_client = get_replicate_client()
+    try:
+        pred = replicate_client.predictions.get(prediction_id)
+    except ReplicateError:
+        return None, 404
+    except:
+        return None, 500
+    return pred, 200

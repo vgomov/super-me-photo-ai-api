@@ -69,3 +69,15 @@ def list_processing_view():
 def list_predictions_view(status:Optional[str] = None):
     results = helpers.list_prediction_results(status=status)
     return results
+
+
+@app.get("/predictions/{prediction_id}", dependencies=[
+    Depends(RateLimiter(times=1000, seconds=20))
+])
+def prediction_detail_view(prediction_id:str):
+    result, status = helpers.get_prediction_detail(prediction_id)
+    if status == 404:
+        raise HTTPException(status_code=status, detail="Prediction not found")
+    elif status == 500:
+        raise HTTPException(status_code=status, detail="Server error")
+    return result, status

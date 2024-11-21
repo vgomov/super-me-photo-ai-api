@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 from decouple import config
 from fastapi import (
     Depends,
@@ -48,12 +48,13 @@ class ImageGenerationRequest(BaseModel):
         dependencies=[
             Depends(RateLimiter(times=2, seconds=5)),
             Depends(RateLimiter(times=10, minutes=1))
-        ]
+        ],
+        response_model=schemas.PredictionCreateModel
 )
 def create_image(data: ImageGenerationRequest):
     try:
         pred_result = helpers.generate_image(data.prompt)
-        return pred_result
+        return schemas.PredictionCreateModel.from_replicate(pred_result.dict())
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
@@ -61,18 +62,24 @@ def create_image(data: ImageGenerationRequest):
 
 @app.get("/processing", dependencies=[
     Depends(RateLimiter(times=1000, seconds=20))
-])
+],
+response_model=List[schemas.PredictionListModel]
+
+)
 def list_processing_view():
     results = helpers.list_prediction_results(status="processing")
-    return results
+    return [schemas.PredictionListModel.from_replicate(x.dict()) for x in results]
 
 
-@app.get("/predictions", dependencies=[
-    Depends(RateLimiter(times=1000, seconds=20))
-])
+@app.get("/predictions", 
+         dependencies=[
+            Depends(RateLimiter(times=1000, seconds=20))
+        ],
+        response_model=List[schemas.PredictionListModel]
+)
 def list_predictions_view(status:Optional[str] = None):
     results = helpers.list_prediction_results(status=status)
-    return results
+    return [schemas.PredictionListModel.from_replicate(x.dict()) for x in results]
 
 
 @app.get("/predictions/{prediction_id}", dependencies=[

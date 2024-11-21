@@ -3,11 +3,52 @@ from datetime import datetime
 from typing import Optional, Dict, Any, List
 from pydantic import BaseModel
 
+
+class PredictionCreateModel(BaseModel):
+    id: str
+    url: str
+    status: str
+
+    @classmethod
+    def from_replicate(cls, data:Dict[str, Any]) -> "PredictionCreateModel":
+        _id=data.get('id')
+        url=f'/predictions/{_id}'
+        return cls(
+            id=_id,
+            url=url,
+            status = data.get('status'),
+        )
+
+
+# {"url": f"/predictions/{x.id}", "status": x.status, "created_at": x.created_at, "completed_at": x.completed_at}
+
+class PredictionListModel(BaseModel):
+    id: str
+    url: str
+    status: str
+    created_at: datetime
+    started_at: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
+
+    @classmethod
+    def from_replicate(cls, data:Dict[str, Any]) -> "PredictionListModel":
+        _id=data.get('id')
+        url=f'/predictions/{_id}'
+        return cls(
+            id=_id,
+            url=url,
+            created_at=data.get('created_at'),
+            completed_at=data.get('completed_at') or None,
+            started_at=data.get('completed_at') or None,
+            status = data.get('status'),
+        )
+
 class PredictionDetailModel(BaseModel):
     id: str
     url: str
     model: str 
     version: str
+    status: str
     created_at: datetime
     completed_at: Optional[datetime] = None
     files: Optional[List[str]] = []
@@ -35,5 +76,6 @@ class PredictionDetailModel(BaseModel):
             created_at=data.get('created_at'),
             completed_at=data.get('completed_at') or None,
             files=files,
+            status = data.get('status'),
             num_outputs=num_outputs
         )

@@ -80,4 +80,4 @@ def prediction_detail_view(prediction_id:str):
         raise HTTPException(status_code=status, detail="Prediction not found")
     elif status == 500:
         raise HTTPException(status_code=status, detail="Server error")
-    return result, status
+    return result

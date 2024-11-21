@@ -1,5 +1,6 @@
-from ._replicate import generate_image
+from ._replicate import generate_image, list_prediction_results
 
 __all__ =[
-    'generate_image'
+    'generate_image',
+    'list_prediction_results',
 ]

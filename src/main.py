@@ -1,3 +1,4 @@
+from typing import Optional
 from decouple import config
 from fastapi import (
     Depends,
@@ -52,3 +53,19 @@ def create_image(data: ImageGenerationRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
+
+
+@app.get("/processing", dependencies=[
+    Depends(RateLimiter(times=1000, seconds=20))
+])
+def list_processing_view():
+    results = helpers.list_prediction_results(status="processing")
+    return results
+
+
+@app.get("/predictions", dependencies=[
+    Depends(RateLimiter(times=1000, seconds=20))
+])
+def list_predictions_view(status:Optional[str] = None):
+    results = helpers.list_prediction_results(status=status)
+    return results

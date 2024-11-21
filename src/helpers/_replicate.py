@@ -40,3 +40,22 @@ def generate_image(prompt,
         "id": pred.id,
         "status": pred.status
     }
+
+def list_prediction_results(
+        model=REPLICATE_MODEL, 
+        version=REPLICATE_MODEL_VERSION,
+        status=None,
+        max_size=500
+    ):
+    replicate_client = get_replicate_client()
+    preds = replicate_client.predictions.list()
+    results = list(preds.results)
+    while preds.next:
+        _preds = replicate_client.predictions.list(preds.next)
+        results += list(_preds.results)
+        if len(results) > max_size:
+            break
+    results = [{"url": f"/predictions/{x.id}", "status": x.status, "created_at": x.created_at, "completed_at": x.completed_at} for x in results if x.model==model and x.version==version]
+    if status is not None:
+        results = [x for x in results if x['status'] == status]
+    return results

@@ -12,7 +12,10 @@ from fastapi_limiter.depends import RateLimiter
 from pydantic import BaseModel
 
 import helpers
+from helpers import schemas
 from helpers.ratelimiting import lifespan as my_ratelimit_lifespan
+
+
 
 REDIS_URL = config('REDIS_URL')
 API_KEY_HEADER = "X-API-Key"
@@ -73,11 +76,13 @@ def list_predictions_view(status:Optional[str] = None):
 
 @app.get("/predictions/{prediction_id}", dependencies=[
     Depends(RateLimiter(times=1000, seconds=20))
-])
+    ],
+    response_model=schemas.PredictionDetailModel
+)
 def prediction_detail_view(prediction_id:str):
     result, status = helpers.get_prediction_detail(prediction_id)
     if status == 404:
         raise HTTPException(status_code=status, detail="Prediction not found")
     elif status == 500:
         raise HTTPException(status_code=status, detail="Server error")
-    return result
+    return schemas.PredictionDetailModel.from_replicate(result.dict())

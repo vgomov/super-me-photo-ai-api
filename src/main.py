@@ -88,12 +88,12 @@ def prediction_detail_view(prediction_id:str):
         raise HTTPException(status_code=status, detail="Server error")
     return schemas.PredictionDetailModel.from_replicate(result.dict())
 
-@app.get("/predictions/{prediction_id}/files/{index_id}", dependencies=[
+@app.get("/predictions/{prediction_id}/files/{index_id}.{ext}", dependencies=[
     Depends(RateLimiter(times=1000, seconds=20))
     ],
     response_model=schemas.PredictionDetailModel
 )
-async def prediction_file_output_view(prediction_id:str, index_id:int):
+async def prediction_file_output_view(prediction_id:str, index_id:int, ext:str):
     result, status = helpers.get_prediction_detail(prediction_id)
     if status == 404:
         raise HTTPException(status_code=status, detail="Prediction not found")

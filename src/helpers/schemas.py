@@ -22,10 +22,10 @@ class PredictionDetailModel(BaseModel):
         _output = data.get('output') or []
         output_names = [Path(x) for x in _output]
         files = []
-        for x, output_path in enumerate(output_names):
+        for idx, output_path in enumerate(output_names):
             suffix = output_path.suffix
             files.append(
-                f"{url}/file/{x}{suffix}"
+                f"{url}/files/{idx}{suffix}"
             )
         return cls(
             id=_id,
